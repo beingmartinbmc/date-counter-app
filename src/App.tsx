@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import './App.css';
 import { format, parseISO, differenceInCalendarDays, startOfDay } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { v4 as uuidv4 } from 'uuid';
+import { eventsApi, mapBackendEventToFrontend, mapFrontendEventToBackend } from './services/api';
 import {
   Container,
   Typography,
@@ -19,7 +19,10 @@ import {
   Avatar,
   FormControl,
   Select,
-  MenuItem
+  MenuItem,
+  CircularProgress,
+  Alert,
+  Snackbar
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import {
@@ -30,7 +33,10 @@ import {
   CalendarToday as CalendarTodayIcon,
   ListAlt as ListAltIcon,
   VisibilityOff as VisibilityOffIcon,
-  PersonOutline as PersonOutlineIcon
+  PersonOutline as PersonOutlineIcon,
+  LightMode as LightModeIcon,
+  DarkMode as DarkModeIcon,
+  EmojiEmotions as EmojiEmotionsIcon
 } from '@mui/icons-material';
 
 interface Event {
@@ -39,9 +45,11 @@ interface Event {
   date: string;
   labels: string[];
   comments: string;
+  reaction?: string;
 }
 
 type Language = 'en' | 'zh';
+type Theme = 'light' | 'dark';
 
 const translations: Record<
   Language,
@@ -117,10 +125,11 @@ const translations: Record<
 };
 
 function App() {
-  const [events, setEvents] = useState<Event[]>(() => {
-    const saved = localStorage.getItem('dateCounterEvents');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const [newEvent, setNewEvent] = useState<Omit<Event, 'id'>>({
     title: '',
@@ -135,6 +144,12 @@ function App() {
   const [activeTab, setActiveTab] = useState<'countdown' | 'journal'>('countdown');
   const [now, setNow] = useState(new Date());
   const [language, setLanguage] = useState<Language>('zh');
+  const [theme, setTheme] = useState<Theme>(() => {
+    const saved = localStorage.getItem('dateCounterTheme');
+    return (saved as Theme) || 'light';
+  });
+  const [reactionPickerOpen, setReactionPickerOpen] = useState<string | null>(null);
+  const [heroVisible, setHeroVisible] = useState(true);
 
   const t = translations[language];
   const locale = language === 'zh' ? zhCN : undefined;
@@ -145,8 +160,37 @@ function App() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('dateCounterEvents', JSON.stringify(events));
-  }, [events]);
+    localStorage.setItem('dateCounterTheme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const backendEvents = await eventsApi.getAll({ limit: 100, sortBy: 'eventDate', sortOrder: 'asc' });
+      const frontendEvents = backendEvents.map(mapBackendEventToFrontend);
+      setEvents(frontendEvents);
+      localStorage.setItem('dateCounterEvents', JSON.stringify(frontendEvents));
+    } catch (err) {
+      console.error('Failed to fetch events:', err);
+      setError('Failed to load events. Please try again.');
+      const saved = localStorage.getItem('dateCounterEvents');
+      if (saved) {
+        setEvents(JSON.parse(saved));
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const showSnackbar = (message: string) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
 
   const handleDialogClose = () => {
     setOpenDialog(false);
@@ -160,22 +204,46 @@ function App() {
     setCurrentLabel('');
   };
 
-  const handleAddEvent = () => {
+  const handleAddEvent = async () => {
     if (!newEvent.title || !newEvent.date) return;
 
-    if (editingId) {
-      setEvents((prev) =>
-        prev.map((event) => (event.id === editingId ? { ...newEvent, id: editingId } : event))
-      );
-    } else {
-      setEvents((prev) => [...prev, { ...newEvent, id: uuidv4() }]);
-    }
+    try {
+      if (editingId) {
+        const backendData = mapFrontendEventToBackend(newEvent);
+        const updatedEvent = await eventsApi.update(editingId, backendData);
+        const frontendEvent = mapBackendEventToFrontend(updatedEvent);
+        const updatedEvents = events.map((event) => (event.id === editingId ? frontendEvent : event));
+        setEvents(updatedEvents);
+        localStorage.setItem('dateCounterEvents', JSON.stringify(updatedEvents));
+        showSnackbar('Event updated successfully');
+      } else {
+        const backendData = mapFrontendEventToBackend(newEvent);
+        const createdEvent = await eventsApi.create(backendData);
+        const frontendEvent = mapBackendEventToFrontend(createdEvent);
+        const newEvents = [...events, frontendEvent];
+        setEvents(newEvents);
+        localStorage.setItem('dateCounterEvents', JSON.stringify(newEvents));
+        showSnackbar('Event created successfully');
+      }
 
-    handleDialogClose();
+      handleDialogClose();
+    } catch (err) {
+      console.error('Failed to save event:', err);
+      showSnackbar('Failed to save event. Please try again.');
+    }
   };
 
-  const handleDeleteEvent = (id: string) => {
-    setEvents((prev) => prev.filter((event) => event.id !== id));
+  const handleDeleteEvent = async (id: string) => {
+    try {
+      await eventsApi.delete(id);
+      const filteredEvents = events.filter((event) => event.id !== id);
+      setEvents(filteredEvents);
+      localStorage.setItem('dateCounterEvents', JSON.stringify(filteredEvents));
+      showSnackbar('Event deleted successfully');
+    } catch (err) {
+      console.error('Failed to delete event:', err);
+      showSnackbar('Failed to delete event. Please try again.');
+    }
   };
 
   const handleEditEvent = (event: Event) => {
@@ -264,8 +332,51 @@ function App() {
     setLanguage(event.target.value as Language);
   };
 
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
+
+  const handleReactionSelect = async (eventId: string, reaction: string) => {
+    const event = events.find(e => e.id === eventId);
+    if (!event) return;
+
+    try {
+      const backendData = {
+        metadata: {
+          labels: event.labels,
+          comments: event.comments,
+          reaction,
+        },
+      };
+      await eventsApi.update(eventId, backendData);
+      const updatedEvents = events.map((e) => (e.id === eventId ? { ...e, reaction } : e));
+      setEvents(updatedEvents);
+      localStorage.setItem('dateCounterEvents', JSON.stringify(updatedEvents));
+      setReactionPickerOpen(null);
+    } catch (err) {
+      console.error('Failed to update reaction:', err);
+      showSnackbar('Failed to add reaction. Please try again.');
+    }
+  };
+
+  const reactions = ['❤️', '😍', '🥳', '🎉', '🔥', '👍', '😊', '💯'];
+
+  const filteredEvents = useMemo(() => {
+    if (activeTab === 'countdown') {
+      return sortedEvents.filter(event => {
+        const meta = computeEventMeta(event.date);
+        return meta.diff >= 0;
+      });
+    } else {
+      return sortedEvents.filter(event => {
+        const meta = computeEventMeta(event.date);
+        return meta.diff < 0;
+      });
+    }
+  }, [sortedEvents, activeTab, computeEventMeta]);
+
   return (
-    <Box className="app-background">
+    <Box className="app-background" data-theme={theme}>
       <Container maxWidth="sm" className="app-root">
         <Box className="phone-shell">
           <Box className="app-header">
@@ -273,6 +384,9 @@ function App() {
               {dateString}
             </Typography>
             <Box className="header-actions">
+              <IconButton size="small" onClick={toggleTheme} className="theme-toggle">
+                {theme === 'light' ? <DarkModeIcon fontSize="small" /> : <LightModeIcon fontSize="small" />}
+              </IconButton>
               <FormControl size="small" className="language-select" variant="outlined">
                 <Select
                   value={language}
@@ -316,20 +430,43 @@ function App() {
             </Box>
           </Box>
 
-          <Paper elevation={0} className="hero-card">
-            <Box className="hero-text">
-              <Typography variant="subtitle1">{t.hero.title}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                {t.hero.subtitle}
-              </Typography>
-            </Box>
-            <IconButton size="small" className="ghost-button">
-              <VisibilityOffIcon fontSize="small" />
-            </IconButton>
-          </Paper>
+          {heroVisible && (
+            <Paper elevation={0} className="hero-card">
+              <Box className="hero-text">
+                <Typography variant="subtitle1">{t.hero.title}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t.hero.subtitle}
+                </Typography>
+              </Box>
+              <IconButton size="small" className="ghost-button" onClick={() => setHeroVisible(false)}>
+                <VisibilityOffIcon fontSize="small" />
+              </IconButton>
+            </Paper>
+          )}
 
           <Box className="event-list" component="section">
-            {sortedEvents.length === 0 ? (
+            {loading ? (
+              <Paper elevation={0} className="empty-state">
+                <CircularProgress />
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                  Loading events...
+                </Typography>
+              </Paper>
+            ) : error ? (
+              <Paper elevation={0} className="empty-state">
+                <Typography variant="h6" color="error">Error</Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  {error}
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={fetchEvents}
+                  size="small"
+                >
+                  Retry
+                </Button>
+              </Paper>
+            ) : filteredEvents.length === 0 ? (
               <Paper elevation={0} className="empty-state">
                 <Typography variant="h6">{t.empty.title}</Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -345,7 +482,7 @@ function App() {
                 </Button>
               </Paper>
             ) : (
-              sortedEvents.map((event, index) => {
+              filteredEvents.map((event, index) => {
                 const meta = computeEventMeta(event.date);
                 const colors = palette[index % palette.length];
                 const formattedEventDate = meta.eventDate
@@ -403,6 +540,36 @@ function App() {
                         {event.comments}
                       </Typography>
                     )}
+
+                    <Box className="event-reaction-section">
+                      {event.reaction ? (
+                        <Box className="event-reaction-display" onClick={() => setReactionPickerOpen(event.id)}>
+                          <span className="reaction-emoji">{event.reaction}</span>
+                        </Box>
+                      ) : (
+                        <IconButton 
+                          size="small" 
+                          className="add-reaction-btn"
+                          onClick={() => setReactionPickerOpen(event.id)}
+                        >
+                          <EmojiEmotionsIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                      
+                      {reactionPickerOpen === event.id && (
+                        <Box className="reaction-picker">
+                          {reactions.map(reaction => (
+                            <button
+                              key={reaction}
+                              className="reaction-option"
+                              onClick={() => handleReactionSelect(event.id, reaction)}
+                            >
+                              {reaction}
+                            </button>
+                          ))}
+                        </Box>
+                      )}
+                    </Box>
                   </Paper>
                 );
               })
@@ -426,17 +593,23 @@ function App() {
           </Box>
 
           <Box className="bottom-nav">
-            <button className="nav-button active">
+            <button 
+              className={`nav-button ${activeTab === 'countdown' ? 'active' : ''}`}
+              onClick={() => setActiveTab('countdown')}
+            >
               <CalendarTodayIcon fontSize="small" />
             </button>
-            <button className="nav-button">
+            <button 
+              className={`nav-button ${activeTab === 'journal' ? 'active' : ''}`}
+              onClick={() => setActiveTab('journal')}
+            >
               <ListAltIcon fontSize="small" />
             </button>
-            <button className="nav-button">
-              <VisibilityOffIcon fontSize="small" />
+            <button className="nav-button" onClick={toggleTheme}>
+              {theme === 'light' ? <DarkModeIcon fontSize="small" /> : <LightModeIcon fontSize="small" />}
             </button>
-            <button className="nav-button">
-              <PersonOutlineIcon fontSize="small" />
+            <button className="nav-button" onClick={() => setOpenDialog(true)}>
+              <AddIcon fontSize="small" />
             </button>
           </Box>
         </Box>
@@ -508,6 +681,17 @@ function App() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

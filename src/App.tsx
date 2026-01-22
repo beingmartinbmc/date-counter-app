@@ -33,7 +33,6 @@ import {
   CalendarToday as CalendarTodayIcon,
   ListAlt as ListAltIcon,
   VisibilityOff as VisibilityOffIcon,
-  PersonOutline as PersonOutlineIcon,
   LightMode as LightModeIcon,
   DarkMode as DarkModeIcon,
   EmojiEmotions as EmojiEmotionsIcon

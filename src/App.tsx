@@ -539,25 +539,28 @@ function App() {
                       </Box>
                     </Box>
 
-                    <Box className="event-days">
-                      <Typography className="event-days-number">{meta.days}</Typography>
-                      <Typography className="event-days-label">{daysLabel}</Typography>
-                    </Box>
-
-                    <Box className="event-countdown-detail">
-                      <Box className="countdown-segment">
-                        <Typography className="countdown-value">{String(meta.hours).padStart(2, '0')}</Typography>
-                        <Typography className="countdown-label">hours</Typography>
-                      </Box>
-                      <Typography className="countdown-separator">:</Typography>
-                      <Box className="countdown-segment">
-                        <Typography className="countdown-value">{String(meta.minutes).padStart(2, '0')}</Typography>
-                        <Typography className="countdown-label">min</Typography>
-                      </Box>
-                      <Typography className="countdown-separator">:</Typography>
-                      <Box className="countdown-segment">
-                        <Typography className="countdown-value">{String(meta.seconds).padStart(2, '0')}</Typography>
-                        <Typography className="countdown-label">sec</Typography>
+                    <Box className="event-countdown-unified">
+                      <Typography className="countdown-label-top">{daysLabel}</Typography>
+                      <Box className="countdown-segments">
+                        <Box className="countdown-segment">
+                          <Typography className="countdown-value">{meta.days}</Typography>
+                          <Typography className="countdown-label">days</Typography>
+                        </Box>
+                        <Typography className="countdown-separator">:</Typography>
+                        <Box className="countdown-segment">
+                          <Typography className="countdown-value">{String(meta.hours).padStart(2, '0')}</Typography>
+                          <Typography className="countdown-label">hours</Typography>
+                        </Box>
+                        <Typography className="countdown-separator">:</Typography>
+                        <Box className="countdown-segment">
+                          <Typography className="countdown-value">{String(meta.minutes).padStart(2, '0')}</Typography>
+                          <Typography className="countdown-label">min</Typography>
+                        </Box>
+                        <Typography className="countdown-separator">:</Typography>
+                        <Box className="countdown-segment">
+                          <Typography className="countdown-value">{String(meta.seconds).padStart(2, '0')}</Typography>
+                          <Typography className="countdown-label">sec</Typography>
+                        </Box>
                       </Box>
                     </Box>
 

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://epic-backend-nzvz68ue5-beingmartinbmcs-projects.vercel.app/api';
+const API_BASE_URL = 'https://epic-backend-im3wong0o-beingmartinbmcs-projects.vercel.app/api';
 
 export interface BackendEvent {
   _id: string;
@@ -59,7 +59,7 @@ export const eventsApi = {
   },
 
   async getById(id: string): Promise<BackendEvent> {
-    const response = await fetch(`${API_BASE_URL}/events/${id}`);
+    const response = await fetch(`${API_BASE_URL}/events?action=get&id=${id}`);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch event: ${response.statusText}`);
@@ -80,7 +80,7 @@ export const eventsApi = {
       comments?: string;
     };
   }): Promise<BackendEvent> {
-    const response = await fetch(`${API_BASE_URL}/events`, {
+    const response = await fetch(`${API_BASE_URL}/events?action=create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -110,7 +110,7 @@ export const eventsApi = {
       comments?: string;
     };
   }): Promise<BackendEvent> {
-    const response = await fetch(`${API_BASE_URL}/events/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/events?action=update&id=${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -127,7 +127,7 @@ export const eventsApi = {
   },
 
   async delete(id: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/events/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/events?action=delete&id=${id}`, {
       method: 'DELETE',
     });
     
@@ -136,8 +136,8 @@ export const eventsApi = {
     }
   },
 
-  async getUpcoming(): Promise<BackendEvent[]> {
-    const response = await fetch(`${API_BASE_URL}/events/upcoming`);
+  async getUpcoming(limit: number = 10): Promise<BackendEvent[]> {
+    const response = await fetch(`${API_BASE_URL}/events?action=upcoming&limit=${limit}`);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch upcoming events: ${response.statusText}`);
@@ -152,13 +152,14 @@ export const eventsApi = {
     skip?: number;
   }): Promise<BackendEvent[]> {
     const queryParams = new URLSearchParams({
+      action: 'range',
       startDate,
       endDate,
     });
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.skip) queryParams.append('skip', params.skip.toString());
 
-    const url = `${API_BASE_URL}/events/range?${queryParams.toString()}`;
+    const url = `${API_BASE_URL}/events?${queryParams.toString()}`;
     const response = await fetch(url);
     
     if (!response.ok) {

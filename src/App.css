@@ -391,8 +391,15 @@ body {
   color: rgba(255, 255, 255, 0.9);
 }
 
-.event-reaction-section {
+.event-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-top: 12px;
+  gap: 12px;
+}
+
+.event-reaction-section {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -482,6 +489,140 @@ body {
 
 .reaction-option:active {
   transform: scale(1.1);
+}
+
+.comments-toggle-btn {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border-radius: 20px !important;
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease !important;
+}
+
+.comments-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+.comments-section {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.add-comment-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.comment-author-input {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 12px !important;
+}
+
+.comment-author-input .MuiOutlinedInput-root {
+  border-radius: 12px;
+}
+
+.comment-input {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 12px !important;
+}
+
+.comment-input .MuiOutlinedInput-root {
+  border-radius: 12px;
+}
+
+.send-comment-btn {
+  align-self: flex-end;
+  background: rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+  transition: all 0.2s ease !important;
+}
+
+.send-comment-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.4) !important;
+  transform: scale(1.1);
+}
+
+.send-comment-btn:disabled {
+  opacity: 0.4;
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.comment-item {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.comment-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  opacity: 0.95;
+}
+
+.comment-time {
+  font-size: 11px;
+  color: white;
+  opacity: 0.7;
+}
+
+.comment-content {
+  font-size: 13px;
+  color: white;
+  opacity: 0.9;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.no-comments {
+  text-align: center;
+  font-size: 13px;
+  color: white;
+  opacity: 0.6;
+  font-style: italic;
+  padding: 20px;
+}
+
+[data-theme="dark"] .comment-author-input,
+[data-theme="dark"] .comment-input {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-theme="dark"] .comment-author-input .MuiOutlinedInput-root,
+[data-theme="dark"] .comment-input .MuiOutlinedInput-root {
+  color: white;
+}
+
+[data-theme="dark"] .comment-author-input .MuiOutlinedInput-notchedOutline,
+[data-theme="dark"] .comment-input .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .add-event-row {

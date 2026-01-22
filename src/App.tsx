@@ -3,6 +3,7 @@ import './App.css';
 import { format, parseISO, differenceInCalendarDays, startOfDay } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { eventsApi, mapBackendEventToFrontend, mapFrontendEventToBackend } from './services/api';
+import ScreenEffects, { EffectType } from './components/ScreenEffects';
 import {
   Container,
   Typography,
@@ -34,7 +35,8 @@ import {
   VisibilityOff as VisibilityOffIcon,
   LightMode as LightModeIcon,
   DarkMode as DarkModeIcon,
-  EmojiEmotions as EmojiEmotionsIcon
+  EmojiEmotions as EmojiEmotionsIcon,
+  AutoAwesome as AutoAwesomeIcon
 } from '@mui/icons-material';
 
 interface Event {
@@ -144,6 +146,8 @@ function App() {
   });
   const [reactionPickerOpen, setReactionPickerOpen] = useState<string | null>(null);
   const [heroVisible, setHeroVisible] = useState(true);
+  const [screenEffect, setScreenEffect] = useState<EffectType | null>(null);
+  const [effectMenuOpen, setEffectMenuOpen] = useState(false);
 
   const t = translations[language];
   const locale = language === 'zh' ? zhCN : undefined;
@@ -186,6 +190,11 @@ function App() {
     setSnackbarOpen(true);
   };
 
+  const triggerEffect = (effect: EffectType) => {
+    setScreenEffect(effect);
+    setTimeout(() => setScreenEffect(null), 4000);
+  };
+
   const handleDialogClose = () => {
     setOpenDialog(false);
     setEditingId(null);
@@ -218,6 +227,7 @@ function App() {
         setEvents(newEvents);
         localStorage.setItem('dateCounterEvents', JSON.stringify(newEvents));
         showSnackbar('Event created successfully');
+        triggerEffect('celebration');
       }
 
       handleDialogClose();
@@ -347,6 +357,14 @@ function App() {
       setEvents(updatedEvents);
       localStorage.setItem('dateCounterEvents', JSON.stringify(updatedEvents));
       setReactionPickerOpen(null);
+      
+      if (reaction === '❤️' || reaction === '😍') {
+        triggerEffect('hearts');
+      } else if (reaction === '🥳' || reaction === '🎉') {
+        triggerEffect('confetti');
+      } else if (reaction === '🔥') {
+        triggerEffect('fireworks');
+      }
     } catch (err) {
       console.error('Failed to update reaction:', err);
       showSnackbar('Failed to add reaction. Please try again.');
@@ -354,6 +372,14 @@ function App() {
   };
 
   const reactions = ['❤️', '😍', '🥳', '🎉', '🔥', '👍', '😊', '💯'];
+
+  const effects: { name: string; effect: EffectType; icon: string }[] = [
+    { name: 'Confetti', effect: 'confetti', icon: '🎊' },
+    { name: 'Hearts', effect: 'hearts', icon: '💕' },
+    { name: 'Balloons', effect: 'balloons', icon: '🎈' },
+    { name: 'Fireworks', effect: 'fireworks', icon: '✨' },
+    { name: 'Celebration', effect: 'celebration', icon: '🎉' },
+  ];
 
   return (
     <Box className="app-background" data-theme={theme}>
@@ -366,6 +392,13 @@ function App() {
             <Box className="header-actions">
               <IconButton size="small" onClick={toggleTheme} className="theme-toggle">
                 {theme === 'light' ? <DarkModeIcon fontSize="small" /> : <LightModeIcon fontSize="small" />}
+              </IconButton>
+              <IconButton 
+                size="small" 
+                onClick={() => setEffectMenuOpen(!effectMenuOpen)} 
+                className="theme-toggle"
+              >
+                <AutoAwesomeIcon fontSize="small" />
               </IconButton>
               <FormControl size="small" className="language-select" variant="outlined">
                 <Select
@@ -571,6 +604,36 @@ function App() {
           </Box>
         </Box>
       </Container>
+
+      <ScreenEffects effect={screenEffect} onComplete={() => setScreenEffect(null)} />
+
+      <Dialog open={effectMenuOpen} onClose={() => setEffectMenuOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Screen Effects</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2, pt: 1 }}>
+            {effects.map((effect) => (
+              <Button
+                key={effect.effect}
+                variant="outlined"
+                onClick={() => {
+                  triggerEffect(effect.effect);
+                  setEffectMenuOpen(false);
+                }}
+                sx={{
+                  height: '80px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1,
+                  fontSize: '32px',
+                }}
+              >
+                <span>{effect.icon}</span>
+                <Typography variant="caption">{effect.name}</Typography>
+              </Button>
+            ))}
+          </Box>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={openDialog} onClose={handleDialogClose} fullWidth maxWidth="sm">
         <DialogTitle>{editingId ? t.dialog.editTitle : t.dialog.addTitle}</DialogTitle>

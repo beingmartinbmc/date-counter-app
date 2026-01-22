@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import './App.css';
 import { format, parseISO, differenceInCalendarDays, startOfDay } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { eventsApi, mapBackendEventToFrontend, mapFrontendEventToBackend } from './services/api';
+import { eventsApi, mapBackendEventToFrontend, mapFrontendEventToBackend, commentsApi, Comment } from './services/api';
 import ScreenEffects, { EffectType } from './components/ScreenEffects';
 import {
   Container,
@@ -36,7 +36,9 @@ import {
   LightMode as LightModeIcon,
   DarkMode as DarkModeIcon,
   EmojiEmotions as EmojiEmotionsIcon,
-  AutoAwesome as AutoAwesomeIcon
+  AutoAwesome as AutoAwesomeIcon,
+  ChatBubbleOutline as ChatBubbleOutlineIcon,
+  Send as SendIcon
 } from '@mui/icons-material';
 
 interface Event {
@@ -148,6 +150,9 @@ function App() {
   const [heroVisible, setHeroVisible] = useState(true);
   const [screenEffect, setScreenEffect] = useState<EffectType | null>(null);
   const [effectMenuOpen, setEffectMenuOpen] = useState(false);
+  const [eventComments, setEventComments] = useState<Record<string, Comment[]>>({});
+  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
+  const [newComment, setNewComment] = useState<{ eventId: string; content: string; author: string }>({ eventId: '', content: '', author: '' });
 
   const t = translations[language];
   const locale = language === 'zh' ? zhCN : undefined;
@@ -188,6 +193,51 @@ function App() {
   const showSnackbar = (message: string) => {
     setSnackbarMessage(message);
     setSnackbarOpen(true);
+  };
+
+  const fetchCommentsForEvent = async (eventId: string) => {
+    try {
+      const comments = await commentsApi.getByEvent(eventId, { limit: 50, sortBy: 'createdAt', sortOrder: 'desc' });
+      setEventComments(prev => ({ ...prev, [eventId]: comments }));
+    } catch (err) {
+      console.error('Failed to fetch comments:', err);
+    }
+  };
+
+  const toggleComments = (eventId: string) => {
+    const newExpanded = new Set(expandedComments);
+    if (expandedComments.has(eventId)) {
+      newExpanded.delete(eventId);
+    } else {
+      newExpanded.add(eventId);
+      if (!eventComments[eventId]) {
+        fetchCommentsForEvent(eventId);
+      }
+    }
+    setExpandedComments(newExpanded);
+  };
+
+  const handleAddComment = async (eventId: string) => {
+    if (!newComment.content.trim()) return;
+    
+    try {
+      const comment = await commentsApi.create({
+        eventId,
+        content: newComment.content,
+        author: newComment.author.trim() || 'Anonymous',
+      });
+      
+      setEventComments(prev => ({
+        ...prev,
+        [eventId]: [comment, ...(prev[eventId] || [])]
+      }));
+      
+      setNewComment({ eventId: '', content: '', author: '' });
+      showSnackbar('Comment added successfully');
+    } catch (err) {
+      console.error('Failed to add comment:', err);
+      showSnackbar('Failed to add comment. Please try again.');
+    }
   };
 
   const triggerEffect = (effect: EffectType) => {
@@ -578,35 +628,101 @@ function App() {
                       </Typography>
                     )}
 
-                    <Box className="event-reaction-section">
-                      {event.reaction ? (
-                        <Box className="event-reaction-display" onClick={() => setReactionPickerOpen(event.id)}>
-                          <span className="reaction-emoji">{event.reaction}</span>
-                        </Box>
-                      ) : (
-                        <IconButton 
-                          size="small" 
-                          className="add-reaction-btn"
-                          onClick={() => setReactionPickerOpen(event.id)}
-                        >
-                          <EmojiEmotionsIcon fontSize="small" />
-                        </IconButton>
-                      )}
-                      
-                      {reactionPickerOpen === event.id && (
-                        <Box className="reaction-picker">
-                          {reactions.map(reaction => (
-                            <button
-                              key={reaction}
-                              className="reaction-option"
-                              onClick={() => handleReactionSelect(event.id, reaction)}
-                            >
-                              {reaction}
-                            </button>
-                          ))}
-                        </Box>
-                      )}
+                    <Box className="event-actions-row">
+                      <Box className="event-reaction-section">
+                        {event.reaction ? (
+                          <Box className="event-reaction-display" onClick={() => setReactionPickerOpen(event.id)}>
+                            <span className="reaction-emoji">{event.reaction}</span>
+                          </Box>
+                        ) : (
+                          <IconButton 
+                            size="small" 
+                            className="add-reaction-btn"
+                            onClick={() => setReactionPickerOpen(event.id)}
+                          >
+                            <EmojiEmotionsIcon fontSize="small" />
+                          </IconButton>
+                        )}
+                        
+                        {reactionPickerOpen === event.id && (
+                          <Box className="reaction-picker">
+                            {reactions.map(reaction => (
+                              <button
+                                key={reaction}
+                                className="reaction-option"
+                                onClick={() => handleReactionSelect(event.id, reaction)}
+                              >
+                                {reaction}
+                              </button>
+                            ))}
+                          </Box>
+                        )}
+                      </Box>
+
+                      <Button
+                        size="small"
+                        className="comments-toggle-btn"
+                        startIcon={<ChatBubbleOutlineIcon fontSize="small" />}
+                        onClick={() => toggleComments(event.id)}
+                      >
+                        {eventComments[event.id]?.length || 0} Comments
+                      </Button>
                     </Box>
+
+                    {expandedComments.has(event.id) && (
+                      <Box className="comments-section">
+                        <Box className="add-comment-box">
+                          <TextField
+                            size="small"
+                            placeholder="Your name (optional)"
+                            value={newComment.eventId === event.id ? newComment.author : ''}
+                            onChange={(e) => setNewComment({ ...newComment, eventId: event.id, author: e.target.value })}
+                            className="comment-author-input"
+                          />
+                          <TextField
+                            size="small"
+                            placeholder="Write a comment..."
+                            value={newComment.eventId === event.id ? newComment.content : ''}
+                            onChange={(e) => setNewComment({ ...newComment, eventId: event.id, content: e.target.value })}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleAddComment(event.id);
+                              }
+                            }}
+                            multiline
+                            maxRows={3}
+                            fullWidth
+                            className="comment-input"
+                          />
+                          <IconButton
+                            size="small"
+                            onClick={() => handleAddComment(event.id)}
+                            disabled={!newComment.content.trim() || newComment.eventId !== event.id}
+                            className="send-comment-btn"
+                          >
+                            <SendIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+
+                        <Box className="comments-list">
+                          {eventComments[event.id]?.map((comment) => (
+                            <Box key={comment._id} className="comment-item">
+                              <Box className="comment-header">
+                                <Typography className="comment-author">{comment.author}</Typography>
+                                <Typography className="comment-time">
+                                  {new Date(comment.createdAt).toLocaleDateString()}
+                                </Typography>
+                              </Box>
+                              <Typography className="comment-content">{comment.content}</Typography>
+                            </Box>
+                          ))}
+                          {(!eventComments[event.id] || eventComments[event.id].length === 0) && (
+                            <Typography className="no-comments">No comments yet. Be the first to comment!</Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    )}
                   </Paper>
                 );
               })

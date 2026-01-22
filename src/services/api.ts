@@ -218,3 +218,77 @@ export function mapFrontendEventToBackend(frontendEvent: {
     },
   };
 }
+
+// Comments API
+export interface Comment {
+  _id: string;
+  eventId: string;
+  content: string;
+  author: string;
+  metadata?: any;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const commentsApi = {
+  async getByEvent(eventId: string, params?: {
+    limit?: number;
+    skip?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<Comment[]> {
+    const queryParams = new URLSearchParams({
+      action: 'by-event',
+      eventId,
+    });
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.skip) queryParams.append('skip', params.skip.toString());
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
+    if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
+
+    const url = `${API_BASE_URL}/comments?${queryParams.toString()}`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch comments: ${response.statusText}`);
+    }
+    
+    const result: PaginatedResponse<Comment> = await response.json();
+    return result.data;
+  },
+
+  async create(comment: {
+    eventId: string;
+    content: string;
+    author?: string;
+    metadata?: any;
+  }): Promise<Comment> {
+    const response = await fetch(`${API_BASE_URL}/comments?action=create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...comment,
+        author: comment.author || 'Anonymous',
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to create comment: ${response.statusText}`);
+    }
+    
+    const result: ApiResponse<Comment> = await response.json();
+    return result.data;
+  },
+
+  async delete(id: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/comments?action=delete&id=${id}`, {
+      method: 'POST',
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to delete comment: ${response.statusText}`);
+    }
+  },
+};

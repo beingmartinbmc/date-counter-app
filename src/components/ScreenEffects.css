@@ -1,0 +1,160 @@
+.screen-effects-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  font-size: 24px;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Confetti Effect */
+.particle-confetti {
+  top: -10%;
+  animation: confetti-fall linear forwards;
+  transform-origin: center;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) translateX(var(--end-x, 0)) rotate(var(--rotation, 720deg));
+    opacity: 0;
+  }
+}
+
+/* Hearts Effect */
+.particle-hearts {
+  bottom: -10%;
+  animation: hearts-float ease-out forwards;
+  font-size: 32px;
+}
+
+@keyframes hearts-float {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.5);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(-10vh) translateX(0) scale(1);
+  }
+  100% {
+    transform: translateY(-110vh) translateX(var(--drift, 0)) scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* Balloons Effect */
+.particle-balloons {
+  bottom: -10%;
+  animation: balloons-rise ease-in forwards;
+  font-size: 36px;
+}
+
+@keyframes balloons-rise {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-110vh) translateX(var(--drift, 0)) rotate(15deg);
+    opacity: 0;
+  }
+}
+
+/* Fireworks Effect */
+.particle-fireworks {
+  top: 50%;
+  left: 50%;
+  animation: fireworks-burst ease-out forwards;
+  font-size: 20px;
+}
+
+@keyframes fireworks-burst {
+  0% {
+    transform: translate(0, 0) scale(0);
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(
+      calc(cos(var(--angle, 0)) * var(--radius, 100px)),
+      calc(sin(var(--angle, 0)) * var(--radius, 100px))
+    ) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Celebration Effect (Mix of confetti and bursts) */
+.particle-celebration {
+  animation: celebration-burst ease-out forwards;
+}
+
+.particle-celebration:nth-child(3n) {
+  top: var(--start-y, 30%);
+  left: var(--start-x, 50%);
+  font-size: 36px;
+}
+
+.particle-celebration:nth-child(3n+1),
+.particle-celebration:nth-child(3n+2) {
+  top: -10%;
+  font-size: 24px;
+}
+
+@keyframes celebration-burst {
+  0% {
+    transform: translate(0, 0) scale(0) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--burst-x, 0), var(--burst-y, 100px)) scale(1) rotate(var(--rotation, 360deg));
+    opacity: 0;
+  }
+}
+
+.particle-celebration:nth-child(3n+1),
+.particle-celebration:nth-child(3n+2) {
+  animation: confetti-fall linear forwards;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .particle {
+    font-size: 20px;
+  }
+  
+  .particle-hearts {
+    font-size: 28px;
+  }
+  
+  .particle-balloons {
+    font-size: 32px;
+  }
+  
+  .particle-fireworks {
+    font-size: 16px;
+  }
+}
+
+/* Theme support */
+[data-theme="dark"] .particle {
+  filter: brightness(1.2);
+}

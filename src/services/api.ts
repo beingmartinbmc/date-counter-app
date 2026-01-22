@@ -128,7 +128,7 @@ export const eventsApi = {
 
   async delete(id: string): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/events?action=delete&id=${id}`, {
-      method: 'DELETE',
+      method: 'POST',
     });
     
     if (!response.ok) {

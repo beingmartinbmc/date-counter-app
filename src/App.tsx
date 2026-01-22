@@ -31,7 +31,6 @@ import {
   Edit as EditIcon,
   Label as LabelIcon,
   CalendarToday as CalendarTodayIcon,
-  ListAlt as ListAltIcon,
   VisibilityOff as VisibilityOffIcon,
   LightMode as LightModeIcon,
   DarkMode as DarkModeIcon,
@@ -54,7 +53,6 @@ const translations: Record<
   Language,
   {
     languageSelectLabel: string;
-    tabs: { countdown: string; journal: string };
     hero: { title: string; subtitle: string };
     empty: { title: string; subtitle: string; button: string };
     addRow: { button: string };
@@ -75,7 +73,6 @@ const translations: Record<
 > = {
   en: {
     languageSelectLabel: 'Choose language',
-    tabs: { countdown: 'Countdown', journal: 'Journal' },
     hero: { title: 'Couple countdown · Shared view', subtitle: 'Capture every heartfelt milestone' },
     empty: {
       title: 'No events yet',
@@ -99,7 +96,6 @@ const translations: Record<
   },
   zh: {
     languageSelectLabel: '选择语言',
-    tabs: { countdown: '倒数日', journal: '日记' },
     hero: { title: '绑定情侣 · 双方可见', subtitle: '记录你们的每一个心动瞬间' },
     empty: {
       title: '暂无事件',
@@ -140,7 +136,6 @@ function App() {
   const [currentLabel, setCurrentLabel] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState<'countdown' | 'journal'>('countdown');
   const [now, setNow] = useState(new Date());
   const [language, setLanguage] = useState<Language>('zh');
   const [theme, setTheme] = useState<Theme>(() => {
@@ -360,20 +355,6 @@ function App() {
 
   const reactions = ['❤️', '😍', '🥳', '🎉', '🔥', '👍', '😊', '💯'];
 
-  const filteredEvents = useMemo(() => {
-    if (activeTab === 'countdown') {
-      return sortedEvents.filter(event => {
-        const meta = computeEventMeta(event.date);
-        return meta.diff >= 0;
-      });
-    } else {
-      return sortedEvents.filter(event => {
-        const meta = computeEventMeta(event.date);
-        return meta.diff < 0;
-      });
-    }
-  }, [sortedEvents, activeTab, computeEventMeta]);
-
   return (
     <Box className="app-background" data-theme={theme}>
       <Container maxWidth="sm" className="app-root">
@@ -396,20 +377,6 @@ function App() {
                   <MenuItem value="en">English</MenuItem>
                 </Select>
               </FormControl>
-              <Box className="segment-control">
-                <button
-                  className={`segment-button ${activeTab === 'countdown' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('countdown')}
-                >
-                  {t.tabs.countdown}
-                </button>
-                <button
-                  className={`segment-button ${activeTab === 'journal' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('journal')}
-                >
-                  {t.tabs.journal}
-                </button>
-              </Box>
             </Box>
           </Box>
 
@@ -465,7 +432,7 @@ function App() {
                   Retry
                 </Button>
               </Paper>
-            ) : filteredEvents.length === 0 ? (
+            ) : sortedEvents.length === 0 ? (
               <Paper elevation={0} className="empty-state">
                 <Typography variant="h6">{t.empty.title}</Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -481,7 +448,7 @@ function App() {
                 </Button>
               </Paper>
             ) : (
-              filteredEvents.map((event, index) => {
+              sortedEvents.map((event, index) => {
                 const meta = computeEventMeta(event.date);
                 const colors = palette[index % palette.length];
                 const formattedEventDate = meta.eventDate
@@ -592,17 +559,8 @@ function App() {
           </Box>
 
           <Box className="bottom-nav">
-            <button 
-              className={`nav-button ${activeTab === 'countdown' ? 'active' : ''}`}
-              onClick={() => setActiveTab('countdown')}
-            >
+            <button className="nav-button active">
               <CalendarTodayIcon fontSize="small" />
-            </button>
-            <button 
-              className={`nav-button ${activeTab === 'journal' ? 'active' : ''}`}
-              onClick={() => setActiveTab('journal')}
-            >
-              <ListAltIcon fontSize="small" />
             </button>
             <button className="nav-button" onClick={toggleTheme}>
               {theme === 'light' ? <DarkModeIcon fontSize="small" /> : <LightModeIcon fontSize="small" />}

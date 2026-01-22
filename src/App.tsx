@@ -221,16 +221,14 @@ function App() {
     if (!newComment.content.trim()) return;
     
     try {
-      const comment = await commentsApi.create({
+      await commentsApi.create({
         eventId,
         content: newComment.content,
         author: newComment.author.trim() || 'Anonymous',
       });
       
-      setEventComments(prev => ({
-        ...prev,
-        [eventId]: [comment, ...(prev[eventId] || [])]
-      }));
+      // Refetch comments to get the latest from backend
+      await fetchCommentsForEvent(eventId);
       
       setNewComment({ eventId: '', content: '', author: '' });
       showSnackbar('Comment added successfully');

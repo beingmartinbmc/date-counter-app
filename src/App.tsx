@@ -139,7 +139,7 @@ function App() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [now, setNow] = useState(new Date());
-  const [language, setLanguage] = useState<Language>('zh');
+  const [language, setLanguage] = useState<Language>('en');
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('dateCounterTheme');
     return (saved as Theme) || 'light';
@@ -297,16 +297,34 @@ function App() {
       const diff = differenceInCalendarDays(eventDate, startOfDay(now));
       const absolute = Math.abs(diff);
 
+      // Calculate detailed time difference
+      const totalMs = eventDate.getTime() - now.getTime();
+      const totalSeconds = Math.floor(Math.abs(totalMs) / 1000);
+      const days = Math.floor(totalSeconds / (24 * 60 * 60));
+      const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
+      const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+      const seconds = totalSeconds % 60;
+
       return {
         diff,
         absolute,
-        eventDate
+        eventDate,
+        days,
+        hours,
+        minutes,
+        seconds,
+        isPast: totalMs < 0
       };
     } catch (error) {
       return {
         diff: 0,
         absolute: 0,
-        eventDate: null
+        eventDate: null,
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        isPast: false
       };
     }
   }, [now]);
@@ -522,8 +540,25 @@ function App() {
                     </Box>
 
                     <Box className="event-days">
-                      <Typography className="event-days-number">{meta.absolute}</Typography>
+                      <Typography className="event-days-number">{meta.days}</Typography>
                       <Typography className="event-days-label">{daysLabel}</Typography>
+                    </Box>
+
+                    <Box className="event-countdown-detail">
+                      <Box className="countdown-segment">
+                        <Typography className="countdown-value">{String(meta.hours).padStart(2, '0')}</Typography>
+                        <Typography className="countdown-label">hours</Typography>
+                      </Box>
+                      <Typography className="countdown-separator">:</Typography>
+                      <Box className="countdown-segment">
+                        <Typography className="countdown-value">{String(meta.minutes).padStart(2, '0')}</Typography>
+                        <Typography className="countdown-label">min</Typography>
+                      </Box>
+                      <Typography className="countdown-separator">:</Typography>
+                      <Box className="countdown-segment">
+                        <Typography className="countdown-value">{String(meta.seconds).padStart(2, '0')}</Typography>
+                        <Typography className="countdown-label">sec</Typography>
+                      </Box>
                     </Box>
 
                     {event.labels.length > 0 && (

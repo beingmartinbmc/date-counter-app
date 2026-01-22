@@ -324,7 +324,7 @@ body {
   display: flex;
   align-items: baseline;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .event-days-number {
@@ -335,6 +335,47 @@ body {
 .event-days-label {
   font-size: 14px;
   opacity: 0.85;
+}
+
+.event-countdown-detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.countdown-segment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.countdown-value {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  color: white;
+}
+
+.countdown-label {
+  font-size: 10px;
+  opacity: 0.8;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.countdown-separator {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  opacity: 0.6;
+  margin: 0 2px;
 }
 
 .event-labels {
@@ -643,6 +684,23 @@ body {
 
   .event-days-label {
     font-size: 13px;
+  }
+
+  .event-countdown-detail {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .countdown-value {
+    font-size: 18px;
+  }
+
+  .countdown-label {
+    font-size: 9px;
+  }
+
+  .countdown-separator {
+    font-size: 16px;
   }
 
   .add-event-row {

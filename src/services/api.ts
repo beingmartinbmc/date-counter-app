@@ -288,7 +288,8 @@ CAPTION: [Short caption with emojis]`;
     }
 
     const result = await response.json();
-    const text = result.response || result.data || '';
+    // Handle the nested response structure from the API
+    const text = result.data?.choices?.[0]?.message?.content || result.response || '';
     
     // Parse the response
     const messageMatch = text.match(/MESSAGE:\s*(.+?)(?=GIFT_1:|$)/s);

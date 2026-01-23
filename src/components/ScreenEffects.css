@@ -76,8 +76,6 @@
 
 /* Fireworks Effect */
 .particle-fireworks {
-  top: 50%;
-  left: 50%;
   animation: fireworks-burst ease-out forwards;
   font-size: 20px;
 }
@@ -87,52 +85,21 @@
     transform: translate(0, 0) scale(0);
     opacity: 1;
   }
-  50% {
+  20% {
     opacity: 1;
+    transform: scale(1.2);
   }
   100% {
-    transform: translate(
-      calc(cos(var(--angle, 0)) * var(--radius, 100px)),
-      calc(sin(var(--angle, 0)) * var(--radius, 100px))
-    ) scale(1.5);
+    transform: translate(var(--end-x, 0), var(--end-y, 0)) scale(0.5);
     opacity: 0;
   }
 }
 
 /* Celebration Effect (Mix of confetti and bursts) */
 .particle-celebration {
-  animation: celebration-burst ease-out forwards;
-}
-
-.particle-celebration:nth-child(3n) {
-  top: var(--start-y, 30%);
-  left: var(--start-x, 50%);
-  font-size: 36px;
-}
-
-.particle-celebration:nth-child(3n+1),
-.particle-celebration:nth-child(3n+2) {
   top: -10%;
-  font-size: 24px;
-}
-
-@keyframes celebration-burst {
-  0% {
-    transform: translate(0, 0) scale(0) rotate(0deg);
-    opacity: 1;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(var(--burst-x, 0), var(--burst-y, 100px)) scale(1) rotate(var(--rotation, 360deg));
-    opacity: 0;
-  }
-}
-
-.particle-celebration:nth-child(3n+1),
-.particle-celebration:nth-child(3n+2) {
   animation: confetti-fall linear forwards;
+  font-size: 28px;
 }
 
 /* Responsive adjustments */

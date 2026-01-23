@@ -326,11 +326,43 @@ body {
   transform: scale(1.1);
 }
 
+.event-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .event-title {
   font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.3px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.event-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 12px;
+  backdrop-filter: blur(5px);
+}
+
+.badge-upcoming {
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.badge-past {
+  background: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.badge-today {
+  background: rgba(255, 215, 0, 0.4);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 .event-date {

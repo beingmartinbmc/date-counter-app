@@ -230,6 +230,85 @@ export interface Comment {
   updatedAt: string;
 }
 
+// AI Generation API
+export interface AIGeneratedContent {
+  message: string;
+  giftIdeas: string[];
+  caption: string;
+}
+
+export const aiApi = {
+  async generateContent(eventTitle: string, daysRemaining: number, isPast: boolean, language: 'en' | 'zh' = 'en'): Promise<AIGeneratedContent> {
+    const isZh = language === 'zh';
+    
+    const timeContext = isPast 
+      ? isZh ? `${Math.abs(daysRemaining)}天前` : `${Math.abs(daysRemaining)} days ago`
+      : daysRemaining === 0 
+        ? isZh ? '今天' : 'today'
+        : isZh ? `${daysRemaining}天后` : `in ${daysRemaining} days`;
+    
+    const languageInstruction = isZh 
+      ? '请用中文回复，使用温馨浪漫的语气。'
+      : 'Respond in English with a warm, romantic tone.';
+    
+    const prompt = `Generate heartfelt content for a special event countdown card.
+
+Event: "${eventTitle}"
+Time: ${timeContext}
+Status: ${isPast ? (isZh ? '已过去' : 'Already happened') : daysRemaining === 0 ? (isZh ? '就是今天！' : 'Today!') : (isZh ? '即将到来' : 'Upcoming')}
+
+${languageInstruction}
+
+Generate the following:
+
+1. A short heartfelt message (2-3 sentences) perfect for sharing
+2. 3 thoughtful gift/celebration ideas appropriate for this event
+3. A short Instagram-worthy caption with emojis
+
+STRICT FORMAT (respond with ONLY this, no extra text):
+MESSAGE: [Your heartfelt message here]
+GIFT_1: [First gift/celebration idea]
+GIFT_2: [Second gift/celebration idea]
+GIFT_3: [Third gift/celebration idea]
+CAPTION: [Short caption with emojis]`;
+
+    const response = await fetch(`${API_BASE_URL}/generic`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt,
+        context: 'Generate romantic countdown card content. Follow the exact format specified.',
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to generate AI content: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    const text = result.response || result.data || '';
+    
+    // Parse the response
+    const messageMatch = text.match(/MESSAGE:\s*(.+?)(?=GIFT_1:|$)/s);
+    const gift1Match = text.match(/GIFT_1:\s*(.+?)(?=GIFT_2:|$)/s);
+    const gift2Match = text.match(/GIFT_2:\s*(.+?)(?=GIFT_3:|$)/s);
+    const gift3Match = text.match(/GIFT_3:\s*(.+?)(?=CAPTION:|$)/s);
+    const captionMatch = text.match(/CAPTION:\s*(.+?)$/s);
+
+    return {
+      message: messageMatch?.[1]?.trim() || 'Wishing you a wonderful celebration! 💕',
+      giftIdeas: [
+        gift1Match?.[1]?.trim() || 'Plan a special surprise',
+        gift2Match?.[1]?.trim() || 'Write a heartfelt letter',
+        gift3Match?.[1]?.trim() || 'Create a memory together',
+      ],
+      caption: captionMatch?.[1]?.trim() || `Counting down to ${eventTitle} ✨💕`,
+    };
+  },
+};
+
 export const commentsApi = {
   async getByEvent(eventId: string, params?: {
     limit?: number;

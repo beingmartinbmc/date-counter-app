@@ -265,7 +265,8 @@ body {
 .event-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+  padding: 4px;
 }
 
 .empty-state {
@@ -281,22 +282,37 @@ body {
 }
 
 .event-card {
-  border-radius: 24px;
-  padding: 20px;
+  border-radius: 28px;
+  padding: 24px;
   color: white;
   position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.event-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 50%);
+  pointer-events: none;
 }
 
 .event-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px) scale(1.01);
 }
 
 .event-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .event-card-header .MuiIconButton-root {
@@ -311,17 +327,23 @@ body {
 }
 
 .event-title {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .event-date {
   font-size: 13px;
-  opacity: 0.8;
+  opacity: 0.85;
+  margin-top: 4px;
+  font-weight: 500;
 }
 
 .event-countdown-unified {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .countdown-label-top {
@@ -335,11 +357,13 @@ body {
 .countdown-segments {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
+  gap: 8px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
   backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .countdown-segment {
@@ -351,10 +375,11 @@ body {
 }
 
 .countdown-value {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 30px;
+  font-weight: 800;
   line-height: 1;
   color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .countdown-label {
@@ -379,11 +404,17 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 8px;
 }
 
 .ghost-chip {
-  background: rgba(255, 255, 255, 0.25) !important;
+  background: rgba(255, 255, 255, 0.3) !important;
   color: white !important;
+  font-weight: 500 !important;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 
 .event-comment {
@@ -810,8 +841,8 @@ body {
   }
 
   .event-card {
-    padding: 16px;
-    border-radius: 20px;
+    padding: 20px;
+    border-radius: 24px;
   }
 
   .event-title {

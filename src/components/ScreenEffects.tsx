@@ -17,7 +17,7 @@ const ScreenEffects: React.FC<ScreenEffectsProps> = ({ effect, onComplete }) => 
       return;
     }
 
-    const particleCount = effect === 'fireworks' ? 100 : effect === 'celebration' ? 150 : 50;
+    const particleCount = effect === 'fireworks' ? 60 : effect === 'celebration' ? 80 : 40;
     const newParticles = Array.from({ length: particleCount }, (_, i) => ({
       id: i,
       style: generateParticleStyle(effect, i),
@@ -67,32 +67,28 @@ const ScreenEffects: React.FC<ScreenEffectsProps> = ({ effect, onComplete }) => 
 
       case 'fireworks':
         const angle = (index / 100) * Math.PI * 2;
-        const radius = 50 + Math.random() * 150;
+        const radius = 80 + Math.random() * 120;
+        const endX = Math.cos(angle) * radius;
+        const endY = Math.sin(angle) * radius;
+        const centerX = 20 + Math.random() * 60;
+        const centerY = 20 + Math.random() * 40;
         return {
-          '--angle': `${angle}rad`,
-          '--radius': `${radius}px`,
+          left: `${centerX}%`,
+          top: `${centerY}%`,
+          '--end-x': `${endX}px`,
+          '--end-y': `${endY}px`,
           animationDelay: `${randomDelay}s`,
-          animationDuration: `${randomDuration - 0.5}s`,
+          animationDuration: `${randomDuration}s`,
         } as React.CSSProperties;
 
       case 'celebration':
-        const isBurst = index % 3 === 0;
-        return isBurst
-          ? {
-              left: `${randomX}%`,
-              top: `${Math.random() * 30}%`,
-              '--burst-x': `${(Math.random() - 0.5) * 300}px`,
-              '--burst-y': `${Math.random() * 200 + 100}px`,
-              animationDelay: `${randomDelay}s`,
-              animationDuration: `${randomDuration}s`,
-            } as React.CSSProperties
-          : {
-              left: `${randomX}%`,
-              animationDelay: `${randomDelay + 0.3}s`,
-              animationDuration: `${randomDuration}s`,
-              '--rotation': `${randomRotation}deg`,
-              '--end-x': `${(Math.random() - 0.5) * 200}px`,
-            } as React.CSSProperties;
+        return {
+          left: `${randomX}%`,
+          animationDelay: `${randomDelay}s`,
+          animationDuration: `${randomDuration}s`,
+          '--rotation': `${randomRotation}deg`,
+          '--end-x': `${(Math.random() - 0.5) * 200}px`,
+        } as React.CSSProperties;
 
       default:
         return {};
@@ -117,9 +113,8 @@ const ScreenEffects: React.FC<ScreenEffectsProps> = ({ effect, onComplete }) => 
         return '✨';
 
       case 'celebration':
-        if (index % 3 === 0) return '🎉';
-        if (index % 3 === 1) return '🎊';
-        return '✨';
+        const celebrationItems = ['🎉', '🎊', '✨', '🥳', '⭐', '🌟'];
+        return celebrationItems[index % celebrationItems.length];
 
       default:
         return '';

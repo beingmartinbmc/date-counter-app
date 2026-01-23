@@ -593,7 +593,6 @@ function App() {
                     </Box>
 
                     <Box className="event-countdown-unified">
-                      <Typography className="countdown-label-top">{daysLabel}</Typography>
                       <Box className="countdown-segments">
                         <Box className="countdown-segment">
                           <Typography className="countdown-value">{meta.days}</Typography>

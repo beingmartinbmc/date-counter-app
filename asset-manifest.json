@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/date-counter-app/static/css/main.c20447ca.css",
-    "main.js": "/date-counter-app/static/js/main.655ed100.js",
+    "main.js": "/date-counter-app/static/js/main.88756244.js",
     "static/js/453.d466c785.chunk.js": "/date-counter-app/static/js/453.d466c785.chunk.js",
     "index.html": "/date-counter-app/index.html",
     "main.c20447ca.css.map": "/date-counter-app/static/css/main.c20447ca.css.map",
-    "main.655ed100.js.map": "/date-counter-app/static/js/main.655ed100.js.map",
+    "main.88756244.js.map": "/date-counter-app/static/js/main.88756244.js.map",
     "453.d466c785.chunk.js.map": "/date-counter-app/static/js/453.d466c785.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.c20447ca.css",
-    "static/js/main.655ed100.js"
+    "static/js/main.88756244.js"
   ]
 }

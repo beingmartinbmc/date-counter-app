@@ -554,6 +554,25 @@ body {
   transform: scale(1.1);
 }
 
+.ai-generate-btn {
+  background: rgba(255, 215, 0, 0.3) !important;
+  color: white !important;
+  border-radius: 20px !important;
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease !important;
+  border: 1px solid rgba(255, 215, 0, 0.4) !important;
+}
+
+.ai-generate-btn:hover {
+  background: rgba(255, 215, 0, 0.45) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
 .comments-toggle-btn {
   background: rgba(255, 255, 255, 0.2) !important;
   color: white !important;
@@ -780,6 +799,71 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+/* AI Modal Styles */
+.ai-section {
+  margin-bottom: 8px;
+}
+
+.ai-content-card {
+  background: linear-gradient(135deg, #f8f9ff 0%, #eef1ff 100%) !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+  position: relative;
+  border: 1px solid rgba(108, 115, 201, 0.15);
+}
+
+.ai-content-card .copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.ai-content-card:hover .copy-btn {
+  opacity: 1;
+}
+
+.ai-gift-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8f9ff !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  border: 1px solid rgba(108, 115, 201, 0.1);
+  transition: all 0.2s ease;
+}
+
+.ai-gift-card:hover {
+  background: #eef1ff !important;
+  transform: translateX(4px);
+}
+
+.caption-card {
+  background: linear-gradient(135deg, #fff5e6 0%, #ffe6f0 100%) !important;
+  border: 1px solid rgba(255, 183, 116, 0.3);
+}
+
+[data-theme="dark"] .ai-content-card {
+  background: linear-gradient(135deg, #2a2b4a 0%, #1e1f3a 100%) !important;
+  border-color: rgba(138, 157, 255, 0.2);
+}
+
+[data-theme="dark"] .ai-gift-card {
+  background: #2a2b4a !important;
+  border-color: rgba(138, 157, 255, 0.15);
+}
+
+[data-theme="dark"] .ai-gift-card:hover {
+  background: #33345a !important;
+}
+
+[data-theme="dark"] .caption-card {
+  background: linear-gradient(135deg, #3a3055 0%, #4a3560 100%) !important;
+  border-color: rgba(255, 183, 116, 0.2);
 }
 
 [data-theme="dark"] .MuiDialog-paper {

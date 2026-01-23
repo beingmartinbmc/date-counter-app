@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import './App.css';
 import { format, parseISO, differenceInCalendarDays, startOfDay } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { eventsApi, mapBackendEventToFrontend, mapFrontendEventToBackend, commentsApi, Comment } from './services/api';
+import { eventsApi, mapBackendEventToFrontend, mapFrontendEventToBackend, commentsApi, Comment, aiApi, AIGeneratedContent } from './services/api';
 import ScreenEffects, { EffectType } from './components/ScreenEffects';
 import {
   Container,
@@ -38,7 +38,9 @@ import {
   EmojiEmotions as EmojiEmotionsIcon,
   AutoAwesome as AutoAwesomeIcon,
   ChatBubbleOutline as ChatBubbleOutlineIcon,
-  Send as SendIcon
+  Send as SendIcon,
+  CardGiftcard as CardGiftcardIcon,
+  ContentCopy as ContentCopyIcon
 } from '@mui/icons-material';
 
 interface Event {
@@ -153,6 +155,10 @@ function App() {
   const [eventComments, setEventComments] = useState<Record<string, Comment[]>>({});
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
   const [newComment, setNewComment] = useState<{ eventId: string; content: string; author: string }>({ eventId: '', content: '', author: '' });
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiContent, setAiContent] = useState<AIGeneratedContent | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiEventTitle, setAiEventTitle] = useState('');
 
   const t = translations[language];
   const locale = language === 'zh' ? zhCN : undefined;
@@ -241,6 +247,30 @@ function App() {
   const triggerEffect = (effect: EffectType) => {
     setScreenEffect(effect);
     setTimeout(() => setScreenEffect(null), 4000);
+  };
+
+  const handleGenerateAI = async (eventTitle: string, days: number, isPast: boolean) => {
+    setAiEventTitle(eventTitle);
+    setAiModalOpen(true);
+    setAiLoading(true);
+    setAiContent(null);
+    
+    try {
+      const content = await aiApi.generateContent(eventTitle, days, isPast, language);
+      setAiContent(content);
+      triggerEffect('celebration');
+    } catch (err) {
+      console.error('Failed to generate AI content:', err);
+      showSnackbar('Failed to generate content. Please try again.');
+      setAiModalOpen(false);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    showSnackbar('Copied to clipboard!');
   };
 
   const handleDialogClose = () => {
@@ -655,6 +685,14 @@ function App() {
 
                       <Button
                         size="small"
+                        className="ai-generate-btn"
+                        startIcon={<AutoAwesomeIcon fontSize="small" />}
+                        onClick={() => handleGenerateAI(event.title, meta.days, meta.isPast)}
+                      >
+                        AI Ideas
+                      </Button>
+                      <Button
+                        size="small"
                         className="comments-toggle-btn"
                         startIcon={<ChatBubbleOutlineIcon fontSize="small" />}
                         onClick={() => toggleComments(event.id)}
@@ -847,6 +885,75 @@ function App() {
           <Button onClick={handleAddEvent} variant="contained" disabled={!newEvent.title || !newEvent.date}>
             {editingId ? t.dialog.update : t.dialog.add}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={aiModalOpen} onClose={() => setAiModalOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <AutoAwesomeIcon color="primary" />
+          AI Ideas for "{aiEventTitle}"
+        </DialogTitle>
+        <DialogContent>
+          {aiLoading ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4 }}>
+              <CircularProgress />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                Generating personalized ideas...
+              </Typography>
+            </Box>
+          ) : aiContent ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box className="ai-section">
+                <Typography variant="subtitle2" color="primary" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  💌 Heartfelt Message
+                </Typography>
+                <Paper elevation={0} className="ai-content-card">
+                  <Typography variant="body1">{aiContent.message}</Typography>
+                  <IconButton size="small" onClick={() => copyToClipboard(aiContent.message)} className="copy-btn">
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </Paper>
+              </Box>
+
+              <Box className="ai-section">
+                <Typography variant="subtitle2" color="primary" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  🎁 Gift & Celebration Ideas
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  {aiContent.giftIdeas.map((idea, idx) => (
+                    <Paper key={idx} elevation={0} className="ai-gift-card">
+                      <CardGiftcardIcon fontSize="small" color="action" />
+                      <Typography variant="body2">{idea}</Typography>
+                    </Paper>
+                  ))}
+                </Box>
+              </Box>
+
+              <Box className="ai-section">
+                <Typography variant="subtitle2" color="primary" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  📸 Share Caption
+                </Typography>
+                <Paper elevation={0} className="ai-content-card caption-card">
+                  <Typography variant="body1">{aiContent.caption}</Typography>
+                  <IconButton size="small" onClick={() => copyToClipboard(aiContent.caption)} className="copy-btn">
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </Paper>
+              </Box>
+            </Box>
+          ) : null}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAiModalOpen(false)}>Close</Button>
+          {aiContent && (
+            <Button 
+              variant="contained" 
+              startIcon={<AutoAwesomeIcon />}
+              onClick={() => handleGenerateAI(aiEventTitle, 0, false)}
+            >
+              Regenerate
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
 

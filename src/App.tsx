@@ -574,7 +574,12 @@ function App() {
                   >
                     <Box className="event-card-header">
                       <Box>
-                        <Typography className="event-title">{event.title}</Typography>
+                        <Box className="event-title-row">
+                          <Typography className="event-title">{event.title}</Typography>
+                          <span className={`event-badge ${meta.diff === 0 ? 'badge-today' : meta.diff > 0 ? 'badge-upcoming' : 'badge-past'}`}>
+                            {meta.diff === 0 ? '📍' : meta.diff > 0 ? '⏳' : '✓'}
+                          </span>
+                        </Box>
                         <Typography className="event-date">{formattedEventDate}</Typography>
                       </Box>
                       <Box>

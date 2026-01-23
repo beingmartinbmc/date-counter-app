@@ -557,14 +557,6 @@ function App() {
                       locale ? { locale } : undefined
                     )
                   : t.meta.invalidDate;
-                const daysLabel = meta.eventDate
-                  ? meta.diff === 0
-                    ? t.meta.today
-                    : meta.diff > 0
-                    ? t.meta.daysLeft
-                    : t.meta.daysAgo
-                  : t.meta.invalidDate;
-
                 return (
                   <Paper
                     key={event.id}

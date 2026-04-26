@@ -7,10 +7,10 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 The app calls `ai-gateway` for both data APIs and AI generation.
 
 ```bash
-REACT_APP_API_ORIGIN=http://localhost:8080
+REACT_APP_API_ORIGIN=https://ai-gateway-production-0388.up.railway.app
 ```
 
-For deployment, set `REACT_APP_API_ORIGIN` to the public `ai-gateway` origin, without a trailing path.
+For local gateway development, set `REACT_APP_API_ORIGIN=http://localhost:8080`.
 
 ## Available Scripts
 

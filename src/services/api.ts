@@ -1,4 +1,4 @@
-const API_ORIGIN = process.env.REACT_APP_API_ORIGIN || 'http://localhost:8080';
+const API_ORIGIN = process.env.REACT_APP_API_ORIGIN || 'https://ai-gateway-production-0388.up.railway.app';
 const API_BASE_URL = `${API_ORIGIN}/api`;
 const AI_API_BASE_URL = `${API_ORIGIN}/api/v1`;
 

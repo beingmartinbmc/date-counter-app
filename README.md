@@ -10,7 +10,7 @@ The app calls `ai-gateway` for both data APIs and AI generation.
 REACT_APP_API_ORIGIN=https://ai-gateway-production-0388.up.railway.app
 ```
 
-For local gateway development, set `REACT_APP_API_ORIGIN=http://localhost:8080`.
+Set `REACT_APP_API_ORIGIN` to another deployed gateway origin when needed.
 
 ## Available Scripts
 

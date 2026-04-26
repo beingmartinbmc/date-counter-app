@@ -1,4 +1,6 @@
-const API_BASE_URL = 'https://epic-backend-im3wong0o-beingmartinbmcs-projects.vercel.app/api';
+const API_ORIGIN = process.env.REACT_APP_API_ORIGIN || 'http://localhost:8080';
+const API_BASE_URL = `${API_ORIGIN}/api`;
+const AI_API_BASE_URL = `${API_ORIGIN}/api/v1`;
 
 export interface BackendEvent {
   _id: string;
@@ -272,13 +274,13 @@ GIFT_2: [Second gift/celebration idea]
 GIFT_3: [Third gift/celebration idea]
 CAPTION: [Short caption with emojis]`;
 
-    const response = await fetch(`${API_BASE_URL}/generic`, {
+    const response = await fetch(`${AI_API_BASE_URL}/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        prompt,
+        message: prompt,
         context: 'Generate romantic countdown card content. Follow the exact format specified.',
       }),
     });
@@ -288,8 +290,7 @@ CAPTION: [Short caption with emojis]`;
     }
 
     const result = await response.json();
-    // Handle the nested response structure from the API
-    const text = result.data?.choices?.[0]?.message?.content || result.response || '';
+    const text = result.answer || result.data?.choices?.[0]?.message?.content || result.response || '';
     
     // Parse the response
     const messageMatch = text.match(/MESSAGE:\s*(.+?)(?=GIFT_1:|$)/s);

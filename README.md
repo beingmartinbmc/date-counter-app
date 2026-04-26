@@ -2,6 +2,16 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Backend Configuration
+
+The app calls `ai-gateway` for both data APIs and AI generation.
+
+```bash
+REACT_APP_API_ORIGIN=http://localhost:8080
+```
+
+For deployment, set `REACT_APP_API_ORIGIN` to the public `ai-gateway` origin, without a trailing path.
+
 ## Available Scripts
 
 In the project directory, you can run:

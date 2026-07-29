@@ -8,9 +8,13 @@ The app calls `ai-gateway` for both data APIs and AI generation.
 
 ```bash
 REACT_APP_API_ORIGIN=https://ai-gateway-production-0388.up.railway.app
+REACT_APP_API_KEY=<gateway key for this origin>
 ```
 
 Set `REACT_APP_API_ORIGIN` to another deployed gateway origin when needed.
+
+`/api/**` requires `REACT_APP_API_KEY`; without it the gateway returns 401. Put it in a
+gitignored `.env.local` for local dev — CI reads it from the `REACT_APP_API_KEY` repository secret.
 
 ## Available Scripts
 

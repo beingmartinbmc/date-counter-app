@@ -1,6 +1,20 @@
 const API_ORIGIN = process.env.REACT_APP_API_ORIGIN || 'https://ai-gateway-production-0388.up.railway.app';
 const API_BASE_URL = `${API_ORIGIN}/api`;
 const AI_API_BASE_URL = `${API_ORIGIN}/api/v1`;
+const API_KEY = process.env.REACT_APP_API_KEY;
+
+// Every gateway call goes through here so the key is attached in exactly one place.
+// Omitted when unset (local dev) so the gateway answers an honest 401 instead of
+// receiving a literal "undefined".
+function apiFetch(url: string, init?: RequestInit): Promise<Response> {
+  return fetch(url, {
+    ...init,
+    headers: {
+      ...init?.headers,
+      ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
+    },
+  });
+}
 
 export interface BackendEvent {
   _id: string;
@@ -50,7 +64,7 @@ export const eventsApi = {
     if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
 
     const url = `${API_BASE_URL}/events${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-    const response = await fetch(url);
+    const response = await apiFetch(url);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch events: ${response.statusText}`);
@@ -61,7 +75,7 @@ export const eventsApi = {
   },
 
   async getById(id: string): Promise<BackendEvent> {
-    const response = await fetch(`${API_BASE_URL}/events?action=get&id=${id}`);
+    const response = await apiFetch(`${API_BASE_URL}/events?action=get&id=${id}`);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch event: ${response.statusText}`);
@@ -82,7 +96,7 @@ export const eventsApi = {
       comments?: string;
     };
   }): Promise<BackendEvent> {
-    const response = await fetch(`${API_BASE_URL}/events?action=create`, {
+    const response = await apiFetch(`${API_BASE_URL}/events?action=create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -112,7 +126,7 @@ export const eventsApi = {
       comments?: string;
     };
   }): Promise<BackendEvent> {
-    const response = await fetch(`${API_BASE_URL}/events?action=update&id=${id}`, {
+    const response = await apiFetch(`${API_BASE_URL}/events?action=update&id=${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -129,7 +143,7 @@ export const eventsApi = {
   },
 
   async delete(id: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/events?action=delete&id=${id}`, {
+    const response = await apiFetch(`${API_BASE_URL}/events?action=delete&id=${id}`, {
       method: 'POST',
     });
     
@@ -139,7 +153,7 @@ export const eventsApi = {
   },
 
   async getUpcoming(limit: number = 10): Promise<BackendEvent[]> {
-    const response = await fetch(`${API_BASE_URL}/events?action=upcoming&limit=${limit}`);
+    const response = await apiFetch(`${API_BASE_URL}/events?action=upcoming&limit=${limit}`);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch upcoming events: ${response.statusText}`);
@@ -162,7 +176,7 @@ export const eventsApi = {
     if (params?.skip) queryParams.append('skip', params.skip.toString());
 
     const url = `${API_BASE_URL}/events?${queryParams.toString()}`;
-    const response = await fetch(url);
+    const response = await apiFetch(url);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch events in range: ${response.statusText}`);
@@ -274,7 +288,7 @@ GIFT_2: [Second gift/celebration idea]
 GIFT_3: [Third gift/celebration idea]
 CAPTION: [Short caption with emojis]`;
 
-    const response = await fetch(`${AI_API_BASE_URL}/openai-proxy`, {
+    const response = await apiFetch(`${AI_API_BASE_URL}/openai-proxy`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -336,7 +350,7 @@ export const commentsApi = {
     if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
 
     const url = `${API_BASE_URL}/comments?${queryParams.toString()}`;
-    const response = await fetch(url);
+    const response = await apiFetch(url);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch comments: ${response.statusText}`);
@@ -352,7 +366,7 @@ export const commentsApi = {
     author?: string;
     metadata?: any;
   }): Promise<Comment> {
-    const response = await fetch(`${API_BASE_URL}/comments?action=create`, {
+    const response = await apiFetch(`${API_BASE_URL}/comments?action=create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -372,7 +386,7 @@ export const commentsApi = {
   },
 
   async delete(id: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/comments?action=delete&id=${id}`, {
+    const response = await apiFetch(`${API_BASE_URL}/comments?action=delete&id=${id}`, {
       method: 'POST',
     });
     

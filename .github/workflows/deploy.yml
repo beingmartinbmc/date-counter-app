@@ -30,7 +30,13 @@ jobs:
       run: npm ci
       
     - name: Build
-      run: npm run build
+      # CRA substitutes an empty string for an unset REACT_APP_* var, so a missing key does
+      # not fail the build — it silently strips the X-API-Key header and publishes a site
+      # that 401s. Fail here instead, in the same shell the value is actually set in:
+      # step-level env is not visible to any other step.
+      run: |
+        test -n "$REACT_APP_API_KEY" || { echo "::error::REACT_APP_API_KEY secret is not set"; exit 1; }
+        npm run build
       env:
         REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
       
